@@ -32,15 +32,28 @@ namespace JwtAuth.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(UserDto request)
+        public async Task<ActionResult<TokenResponseDto>> Login(UserDto request)
         {
-            var token = await authService.LogingAsync(request);
-            if (token is null)
+            var response = await authService.LogingAsync(request);
+            if (response is null)
             {
                 return BadRequest("Invalid username or password.");
             }
 
-            return Ok(token);
+            return Ok(response);
+        }
+
+        [HttpPost("refresh-token")]
+        public async Task<ActionResult<TokenResponseDto>> RefreshToken(RefreshTokenRequestDto request)
+        {
+            var response = await authService.RefreshTokenAsync(request);
+
+            if(response is null || response.AccessToken is null || response.RefreshToken is null )
+            {
+                return Unauthorized("Invalid refresh token.");
+            }
+
+            return Ok(response);
         }
 
         [Authorize]
